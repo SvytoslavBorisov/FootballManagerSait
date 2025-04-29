@@ -1,0 +1,63 @@
+{% extends 'football/base.html' %}
+{% block title %}League Manager{% endblock %}
+
+{% block content %}
+<!-- Фон страницы -->
+<div class="page-background">
+  <!-- Календарь сверху -->
+  <div class="calendar">
+    {% comment %} Пример: динамически задавайте days в контексте {% endcomment %}
+    {% for day in days %}
+      <div class="calendar-day{% if day == current_day %} today{% endif %}">{{ day }}</div>
+    {% endfor %}
+  </div>
+
+  <!-- Навигационные вкладки -->
+  <div class="nav-tabs-container">
+    <button type="button" class="nav-tab active" data-target="teams-tab">Команды</button>
+    <button type="button" class="nav-tab" data-target="scorers-tab">Бомбардиры</button>
+    <button type="button" class="nav-tab" data-target="fixtures-tab">Календарь</button>
+    <!-- Добавьте ещё вкладки по необходимости -->
+  </div>
+
+  <!-- Содержимое вкладок -->
+  <div class="tab-content-container">
+    <!-- Таблица команд -->
+    <div id="teams-tab" class="nav-tab-content active">
+      <form action="{% url 'reset_league' %}" method="post" class="mb-3">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-warning">Сбросить таблицу и сессию</button>
+      </form>
+      <form method="post">
+        {% csrf_token %}
+        <button
+          type="button"
+          hx-post="{% url 'play_round' %}"
+          hx-target="#league-table-container"
+          hx-swap="innerHTML"
+          class="btn btn-primary mb-3"
+        >Играть тур</button>
+
+        <div id="league-table-container">
+          {% include 'football/league_table_body.html' %}
+        </div>
+      </form>
+    </div>
+
+    <!-- Таблица бомбардиров -->
+    <div id="scorers-tab" class="nav-tab-content">
+      {% include 'football/scorers_table.html' %}
+    </div>
+
+    <!-- Календарь матчей -->
+    <div id="fixtures-tab" class="nav-tab-content">
+      {% include 'football/fixtures_table.html' %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block modal %}
+  {% include 'football/modal.html' %}
+{% endblock %}"

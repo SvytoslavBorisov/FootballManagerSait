@@ -1,0 +1,158 @@
+{% load static %}
+<table class="league-table">
+  <thead>
+    <tr>
+      {% for h in headers %}<th>{{ h }}</th>{% endfor %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in rows %}
+      <tr>
+        <td class="center">{{ row.pos }}</td>
+        <td>{{ row.team.title }}</td>
+        {% for cell in row.cells %}
+          <td id='{{ cell.match_id }}' class="match-cell {{ cell.css }} center">{{ cell.text }}</td>
+        {% endfor %}
+        <td class="center">{{ row.played }}</td>
+        <td class="center">{{ row.wins }}</td>
+        <td class="center">{{ row.draws }}</td>
+        <td class="center">{{ row.losses }}</td>
+        <td class="center">{{ row.gf }}:{{ row.ga }}</td>
+        <td class="center">{{ row.points }}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<style>
+  /* сам оверлей */
+  .modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  .modal.active {
+    display: flex;
+  }
+  /* окно */
+  .modal-content {
+    background: #fff;
+    padding: 20px;
+    border-radius: 6px;
+    max-width: 500px;
+    width: 90%;
+    position: relative;
+  }
+  /* крестик */
+  .modal-close {
+    position: absolute;
+    top: 8px; right: 12px;
+    font-size: 24px;
+    cursor: pointer;
+  }
+</style>
+<!-- СТИЛИ -->
+<style>
+  .modal {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top:   0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+  }
+  .modal.active { display: flex; }
+  .modal-content {
+    background: #fff;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 900px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  .modal-header {
+    padding: 16px;
+    border-bottom: 1px solid #ddd;
+    text-align: center;
+  }
+  #modal-teams { margin: 0; font-size: 1.25rem; }
+  #modal-score { font-size: 1.5rem; color: #007bff; }
+  .modal-close {
+    position: absolute;
+    top: 12px; right: 16px;
+    font-size: 24px;
+    cursor: pointer;
+  }
+  .tabs {
+    display: flex;
+    border-bottom: 1px solid #ddd;
+  }
+  .tab-button {
+    flex: 1;
+    padding: 12px;
+    background: #f9f9f9;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    font-size: 1rem;
+  }
+  .tab-button.active {
+    background: #fff;
+    border-bottom: 2px solid #007bff;
+    font-weight: bold;
+  }
+  .tab-content {
+    display: none;
+    padding: 16px;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+  .tab-content.active { display: block; }
+
+  /* Футбольное поле + состав */
+  .lineup-container {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .pitch {
+    flex: 1;
+    background: #6aa84f;
+    border: 2px solid #4e8234;
+    border-radius: 4px;
+    position: relative;
+    height: 200px;
+  }
+  .player-list {
+    flex: 1;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 0.9rem;
+  }
+  .player-list li {
+    padding: 4px 0;
+    border-bottom: 1px solid #eee;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  table th, table td {
+    padding: 8px;
+    border: 1px solid #ddd;
+    text-align: center;
+  }
+  table th { background: #f1f1f1; }
+  ul.event-list { padding: 0; list-style: none; }
+  ul.event-list li { margin-bottom: 8px; }
+</style>
