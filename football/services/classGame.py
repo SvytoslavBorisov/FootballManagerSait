@@ -113,12 +113,13 @@ class Game:
             self.whichBall, self.teams[wb], self.teams[(wb + 1) % 2], self.history, event = PassEngine.passTo(wb, self.teams[wb], wb1,
                                          self.teams[(wb + 1) % 2], 11 - wb1)  # id игрока - сопреника и его позиция
             if wb == 0:
-                self.xgs[0] += event.homeXGs
+                self.xgs[0] += event.xg
+                if event.is_goal:
+                    self.homeGoal += 1
             elif wb == 1:
-                self.xgs[1] += event.homeXGs
-
-            self.homeGoal += event.homeGoal
-            self.guestGoal += event.guestGoal
+                self.xgs[1] += event.xg
+                if event.is_goal:
+                    self.guestGoal += 1
 
             #self.mainHistory.append((f'{self.teams[].players[idActivePlayerIdTeam].name} ГОЛ', idTeam, self.minute))
             if self.whichBall[0]:

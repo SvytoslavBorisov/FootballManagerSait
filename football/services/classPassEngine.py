@@ -29,7 +29,7 @@ class PassEngine:
         11: 'ST'
     }
 
-    # Функция паса игрока
+    @staticmethod
     def passTo(idTeam, HomeTeam, idActivePlayerIdTeam, GuestTeam, idActivePlayerOtherTeam):
 
         postionIdHome = PassEngine.positionsToStr[idActivePlayerIdTeam]
@@ -111,7 +111,19 @@ class PassEngine:
                 HomeTeam.players[idActivePlayerIdTeam].allPass -= 1
                 HomeTeam.players[idActivePlayerIdTeam].correctPass -= 1
                 # Обращаемся к функции удара, передаем команда, которая бьет, и бьющего игрока
-                result['WhoBall'], HomeTeam, GuestTeam, history, event = ShotEngine.shot(idTeam, HomeTeam, idActivePlayerIdTeam, GuestTeam, idActivePlayerOtherTeam, history)
+                event = ShotEngine.shot(idTeam,
+                                        HomeTeam.players[idActivePlayerIdTeam],
+                                        GuestTeam.players[GuestTeam.idSostav[0]])
+                history.append(event.history)
+
+                if event.is_goal:
+                    HomeTeam.goals += 1
+                    GuestTeam.loseGoals += 1
+                    result['WhoBall'] = [(idTeam + 1) % 2, 6]
+                else:
+                    result['WhoBall'] = [(idTeam + 1) % 2, 1]
+
+                return result['WhoBall'], HomeTeam, GuestTeam, history, event
 
         # Если пас неудачен, то игрок другой команды произвел отбор
         else:
@@ -123,4 +135,11 @@ class PassEngine:
             GuestTeam.players[idActivePlayerOtherTeam].selections += 1
             # Возвращаем команду у которой мяч и номер позиции
             result['WhoBall'] = [(idTeam + 1) % 2, idActivePlayerOtherTeam + 1]
+
+        event = Pass(
+            history='',
+            is_goal=False,
+            xg=0
+        )
+
         return result['WhoBall'], HomeTeam, GuestTeam, history, event
