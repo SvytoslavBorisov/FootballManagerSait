@@ -73,6 +73,8 @@ class modelFootballer(models.Model):
     shots_on_target = models.IntegerField(blank=True, null=True)
     np_shots_on_target = models.IntegerField(blank=True, null=True)
     last_name = models.TextField(blank=True, null=True)
+    fifa_physic = models.TextField(blank=True, null=True)
+    fifa_goals = models.TextField(blank=True, null=True)
     fouls_committed = models.IntegerField(blank=True, null=True)
     s90 = models.FloatField(db_column='S90', blank=True, null=True)  # Field name made lowercase.
     sot90 = models.FloatField(db_column='SoT90', blank=True, null=True)  # Field name made lowercase.

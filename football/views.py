@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.views.decorators.http import require_http_methods, require_POST
 from django.http import JsonResponse
-from .models import modelTeam
+from .models import modelTeam, modelFootballer
 from .services.classTeam import Team
 from .services.classLiga import Liga
 from .services.classGame import Game
@@ -19,6 +19,8 @@ def reset_league(request):
     #
     # from .models import SomeResultModel
     # SomeResultModel.objects.all().delete()
+
+    modelFootballer.objects.all().update(fifa_goals=0, fifa_physic=100)
 
     # После сброса перенаправляем обратно на таблицу
     return redirect('league_table')
@@ -180,6 +182,23 @@ def match_detail_json(request, match_id):
     return JsonResponse(data)
 
 
+def players_json(request):
+    players = list(modelFootballer.objects.all())
+    players_list = [
+        {
+            "name": p.full_name,
+            "goals": p.fifa_goals,             # подставьте реальное поле модели
+            "assists": 5,         # подставьте реальное поле модели
+            "appearances": 5, # подставьте реальное поле модели
+        }
+        for p in players
+    ]
+
+    if not players_list:
+        return JsonResponse({'error': 'Not found'}, status=404)
+    return JsonResponse(players_list, safe=False)
+
+
 @require_POST
 def play_round(request):
     """
@@ -201,6 +220,18 @@ def play_round(request):
             game.choiceSelection()
             game.match()
             games.append(game)
+            for x in game.teams[0].players:
+                modelFootballer.objects \
+                    .filter(player_id=x.player_id) \
+                    .update(fifa_goals=x.goals,
+                            fifa_physic=x.physic)
+
+            for x in game.teams[1].players:
+                modelFootballer.objects \
+                    .filter(player_id=x.player_id) \
+                    .update(fifa_goals=x.goals,
+                            fifa_physic=x.physic)
+
             results[str(number_tour)][f'{hid},{gid}'] = (game.homeGoal, game.guestGoal)
 
         # обратно в сессию

@@ -88,3 +88,89 @@ document.querySelectorAll('.nav-tab').forEach(btn => {
         });
   });
 });
+
+const apiUrl = '/api/players';
+let playersData = [];
+let currentPage = 1;
+const rowsPerPage = 50;
+let currentSortKey = '';
+let currentSortOrder = 'asc';
+
+document.addEventListener('DOMContentLoaded', () => {
+  fetchPlayers();
+  setupSorting();
+});
+
+function fetchPlayers() {
+  fetch(apiUrl)
+    .then(response => response.json())
+    .then(data => {
+      playersData = data;
+      renderTable();
+      renderPagination();
+    })
+    .catch(error => console.error('Ошибка при получении данных:', error));
+}
+
+function setupSorting() {
+  document.querySelectorAll('#playersTable th').forEach(header => {
+    header.addEventListener('click', () => {
+      const key = header.getAttribute('data-key');
+      sortBy(key);
+    });
+  });
+}
+
+function sortBy(key) {
+  if (currentSortKey === key) {
+    currentSortOrder = currentSortOrder === 'asc' ? 'desc' : 'asc';
+  } else {
+    currentSortKey = key;
+    currentSortOrder = 'asc';
+  }
+  playersData.sort((a, b) => {
+    if (a[key] < b[key]) return currentSortOrder === 'asc' ? -1 : 1;
+    if (a[key] > b[key]) return currentSortOrder === 'asc' ? 1 : -1;
+    return 0;
+  });
+  currentPage = 1;
+  renderTable();
+  renderPagination();
+}
+
+function renderTable() {
+  const tbody = document.querySelector('#playersTable tbody');
+  tbody.innerHTML = '';
+  const start = (currentPage - 1) * rowsPerPage;
+  const end = start + rowsPerPage;
+  const pageData = playersData.slice(start, end);
+
+  pageData.forEach(player => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${player.name}</td>
+      <td>${player.goals}</td>
+      <td>${player.assists}</td>
+      <td>${player.appearances}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function renderPagination() {
+  const pagination = document.getElementById('pagination');
+  pagination.innerHTML = '';
+  const totalPages = Math.ceil(playersData.length / rowsPerPage);
+
+  for (let i = 1; i <= totalPages; i++) {
+    const btn = document.createElement('button');
+    btn.innerText = i;
+    if (i === currentPage) btn.classList.add('active');
+    btn.addEventListener('click', () => {
+      currentPage = i;
+      renderTable();
+      renderPagination();
+    });
+    pagination.appendChild(btn);
+  }
+}

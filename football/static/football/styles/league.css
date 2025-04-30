@@ -80,3 +80,45 @@
 .nav-tab-content.active {
   display: block;
 }
+
+body {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+}
+h1 {
+  text-align: center;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 10px;
+}
+th, td {
+  padding: 8px;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+th {
+  cursor: pointer;
+}
+th:hover {
+  background-color: #f1f1f1;
+}
+tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+#pagination {
+  text-align: center;
+  margin-top: 10px;
+}
+#pagination button {
+  margin: 0 2px;
+  padding: 5px 10px;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+}
+#pagination button.active {
+  font-weight: bold;
+  text-decoration: underline;
+}

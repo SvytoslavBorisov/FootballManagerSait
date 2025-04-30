@@ -17,7 +17,7 @@ class Footballer:
         'blocks', 'clearances', 'ground_duels', 'ground_duels_won',
         'ground_duel_perc', 'aerial_duels', 'aerial_duels_won', 'aerial_duel_perc',
         'yellows', 'reds', 'fouls_commited', 'pens_conceded', 'offsides', 'assists_minus_xa',
-        'carry_end_assist','carry_end_moment', 'carry_end_goal','carry_end_shot',
+        'carry_end_assist','carry_end_moment', 'carry_end_goal','carry_end_shot', 'fifa_goals', 'fifa_physic'
     ]
 
     # Поля FIFA-атрибутов (вычислены ранее и сохранены в БД)
@@ -64,9 +64,9 @@ class Footballer:
 
         # Статистика сезона
         self.active = False
-        self.goals = 0
+        self.goals = self.fifa_goals
         self.correctPass = 0
-        self.physic = 100
+        self.physic = self.fifa_physic
         self.shots = 0
         self.allPass = 0
         self.loseBall = 0
@@ -93,6 +93,9 @@ class Footballer:
             self.physic = 100
         else:
             self.physic += 250 / self.age
+
+    def oneMove(self):
+        self.physic = self.physic / (self.age * 7)
 
     # Утилита подсчёта навыков
     def countSkillPosition(self, for4, for3, for2, for1, count, difference):

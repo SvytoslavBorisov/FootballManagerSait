@@ -1,4 +1,5 @@
-import random
+from .dataclassPassShot import Pass, Shot
+from football.services.classPassEngine import PassEngine
 
 
 class Game:
@@ -95,25 +96,36 @@ class Game:
 
     # Проиграть 1 матч между 2 командами
     def match(self):
+
         # Home team 0/ NumberPosition 6
         self.whichBall = [0, 6]
         if self.whichBall[0]:
             self.control[0] += 1
         else:
             self.control[1] += 1
-        # Проход по каждой минуте матча (540 - для большей реалистичности итового результата)
+
+        # Проход по каждой минуте матча (540 - для большей реалистичности итогового результата)
         while self.minute < 540:
             # Для сокращения названия переменных
             wb = self.whichBall[0]
             wb1 = self.whichBall[1]
             # Мяч перемещяется на другую позицию
-            self.whichBall = self.passTo(*self.positionsOptionsToPass[wb1 - 1],                 # Опции для данной позиции
-                                        self.teams[wb].idSostav[wb1 - 1], wb,                   # id игрока у которого мяч и (0, 1) команды
-                                        self.teams[(wb + 1) % 2].idSostav[11 - wb1], 11 - wb1)  # id игрока - сопреника и его позиция
+            self.whichBall, self.teams[wb], self.teams[(wb + 1) % 2], self.history, event = PassEngine.passTo(wb, self.teams[wb], wb1,
+                                         self.teams[(wb + 1) % 2], 11 - wb1)  # id игрока - сопреника и его позиция
+            if wb == 0:
+                self.xgs[0] += event.homeXGs
+            elif wb == 1:
+                self.xgs[1] += event.homeXGs
+
+            self.homeGoal += event.homeGoal
+            self.guestGoal += event.guestGoal
+
+            #self.mainHistory.append((f'{self.teams[].players[idActivePlayerIdTeam].name} ГОЛ', idTeam, self.minute))
             if self.whichBall[0]:
                 self.control[0] += 1
             else:
                 self.control[1] += 1
+
             # Прибавляем минуту
             self.minute += 1
 
@@ -145,154 +157,6 @@ class Game:
         # Увеличиваем общее количество игр у каждой команды
         self.teams[0].games += 1
         self.teams[1].games += 1
-
-    # Функция паса игрока
-    def passTo(self, passToGoalkeaper, passToLeftDefender, passToLeftCenterDefender, passToRightCenterDefender,
-               passToRightDefender, passToLeftCenterMid, passToRightCenterNid, passToAttackMid, passToLeftWinger,
-               passToRightWinger, passToStriker, PlayerPasNum, # Раскрытие списка positionsOptionsToPass
-               idActivePlayerIdTeam, idTeam, idActivePlayerOtherTeam, numberPositionOtherPlayer):
-
-        # Добавление рандома к процессу отбора мяча
-        otherPlayersSelection = 1 + random.randint(0, 40)
-        randomPass = 1 + random.randint(0, 100)
-
-        # Увеличиваем количество пасов игрока
-        self.teams[idTeam].players[idActivePlayerIdTeam].allPass += 1
-
-        # Сокращение переменной
-        ps = self.teams[idTeam].players[idActivePlayerIdTeam].physic
-
-        # Изменение физики игрока(совершил действие -> устал, зависимость от возраста)
-        self.teams[idTeam].players[idActivePlayerIdTeam].physic -= ps / (self.teams[idTeam].players[idActivePlayerIdTeam].age)
-
-        # Сокращение переменных
-        skillSelection = self.teams[(idTeam + 1) % 2].players[idActivePlayerOtherTeam].skillSelection  # Уровень отбора соперника
-        skillPass = self.teams[idTeam].players[idActivePlayerIdTeam].skillPass  # Уровень паса игрока
-
-        # Проверяем, удачно ли игрок отдал пас
-        if (skillSelection * 2 + otherPlayersSelection <= skillPass * 2 + randomPass) or skillPass == 1: # если это вратарь
-            # На какую позицию отдастся пас по роцентному соотношению из positionsOptionsToPass
-            playerPass = 1 + random.randint(1, PlayerPasNum)
-            # Добавляем игроку 1 удачный пас
-            self.teams[idTeam].players[idActivePlayerIdTeam].correctPass += 1
-
-            # Пас голкиперу и т.д.
-            if (playerPass > 0) and (playerPass < passToGoalkeaper):
-                self.history.append(f'{self.teams[idTeam].players[idActivePlayerIdTeam].name} отдаёт пас на '
-                                    f'{self.teams[idTeam].players[self.teams[idTeam].idSostav[0]].name}')
-                # Возвращаем команду у которой мяч и номер позиции, везде аналогично
-                return [idTeam, 1]
-            elif (playerPass > passToGoalkeaper) and (playerPass < passToLeftDefender):
-                self.history.append(f'{self.teams[idTeam].players[idActivePlayerIdTeam].name} отдаёт пас на '
-                                    f'{self.teams[idTeam].players[self.teams[idTeam].idSostav[1]].name}')
-                return [idTeam, 2]
-            elif (playerPass > passToLeftDefender) and (playerPass < passToLeftCenterDefender):
-                self.history.append(f'{self.teams[idTeam].players[idActivePlayerIdTeam].name} отдаёт пас на '
-                                    f'{self.teams[idTeam].players[self.teams[idTeam].idSostav[2]].name}')
-                return [idTeam, 3]
-            elif (playerPass > passToLeftCenterDefender) and (playerPass < passToRightCenterDefender):
-                self.history.append(f'{self.teams[idTeam].players[idActivePlayerIdTeam].name} отдаёт пас на '
-                                    f'{self.teams[idTeam].players[self.teams[idTeam].idSostav[3]].name}')
-                return [idTeam, 4]
-            elif (playerPass > passToRightCenterDefender) and (playerPass < passToRightDefender):
-                self.history.append(f'{self.teams[idTeam].players[idActivePlayerIdTeam].name} отдаёт пас на '
-                                    f'{self.teams[idTeam].players[self.teams[idTeam].idSostav[4]].name}')
-                return [idTeam, 5]
-            elif (playerPass > passToRightDefender) and (playerPass < passToLeftCenterMid):
-                self.history.append(f'{self.teams[idTeam].players[idActivePlayerIdTeam].name} отдаёт пас на '
-                                    f'{self.teams[idTeam].players[self.teams[idTeam].idSostav[5]].name}')
-                return [idTeam, 6]
-            elif (playerPass > passToLeftCenterMid) and (playerPass < passToRightCenterNid):
-                self.history.append(f'{self.teams[idTeam].players[idActivePlayerIdTeam].name} отдаёт пас на '
-                                    f'{self.teams[idTeam].players[self.teams[idTeam].idSostav[6]].name}')
-                return [idTeam, 7]
-            elif (playerPass > passToRightCenterNid) and (playerPass < passToAttackMid):
-                self.history.append(f'{self.teams[idTeam].players[idActivePlayerIdTeam].name} отдаёт пас на '
-                                    f'{self.teams[idTeam].players[self.teams[idTeam].idSostav[7]].name}')
-                return [idTeam, 8]
-            elif (playerPass > passToAttackMid) and (playerPass < passToLeftWinger):
-                self.history.append(f'{self.teams[idTeam].players[idActivePlayerIdTeam].name} отдаёт пас на '
-                                    f'{self.teams[idTeam].players[self.teams[idTeam].idSostav[8]].name}')
-                return [idTeam, 9]
-            elif (playerPass > passToLeftWinger) and (playerPass < passToRightWinger):
-                self.history.append(f'{self.teams[idTeam].players[idActivePlayerIdTeam].name} отдаёт пас на '
-                                    f'{self.teams[idTeam].players[self.teams[idTeam].idSostav[9]].name}')
-                return [idTeam, 10]
-            elif (playerPass > passToRightWinger) and (playerPass < passToStriker):
-                self.history.append(f'{self.teams[idTeam].players[idActivePlayerIdTeam].name} отдаёт пас на '
-                                    f'{self.teams[idTeam].players[self.teams[idTeam].idSostav[10]].name}')
-                return [idTeam, 11]
-
-            # Если не попало в пас, то будет произведён удар
-            else:
-                # Вычитаем 1 пас, так как игрок будет бить
-                self.teams[idTeam].players[idActivePlayerIdTeam].allPass -= 1
-                self.teams[idTeam].players[idActivePlayerIdTeam].correctPass -= 1
-                # Обращаемся к функции удара, передаем команда, которая бьет, и бьющего игрока
-                return self.shot(idTeam, idActivePlayerIdTeam)
-
-        # Если пас неудачен, то игрок другой команды произвел отбор
-        else:
-            # Прибавляем игроку потерю
-            self.teams[idTeam].players[idActivePlayerIdTeam].loseBall += 1
-            self.history.append(f'{self.teams[(idTeam + 1) % 2].players[idActivePlayerOtherTeam].name}'
-                                f' отобрал мяч у {self.teams[idTeam].players[idActivePlayerIdTeam].name}')
-            # Прибавляем игроку отбор
-            self.teams[(idTeam + 1) % 2].players[idActivePlayerOtherTeam].selections += 1
-            # Возвращаем команду у которой мяч и номер позиции
-            return [(idTeam + 1) % 2, numberPositionOtherPlayer + 1]
-
-    # Функция удара
-    def shot(self, idTeam, idActivePlayerIdTeam):
-        self.shoots[idTeam] += 1
-        # Добавление рандома к процессу удара
-        shotPlayer = random.randint(1, 100 - idTeam * 10)
-        self.xgs[idTeam] += shotPlayer / 1000
-        saveGoalKeaper = random.randint(1, 711 + idTeam * 10)
-        # Сокращение переменных
-        skillShot = self.teams[idTeam].players[idActivePlayerIdTeam].skillShot
-        skillSave = self.teams[(idTeam + 1) % 2].players[self.teams[(idTeam + 1) % 2].idSostav[0]].skillSave
-        # Если удар точен
-        if (shotPlayer + skillShot) > (skillSave + saveGoalKeaper):
-            self.shoots_to[idTeam] += 1
-            # По индексу определяем кому прибавлять гол
-            if idTeam:
-                self.guestGoal += 1
-                self.whoScoreGuest.append([idTeam, idActivePlayerIdTeam])
-            else:
-                self.homeGoal += 1
-                self.whoScoreHome.append([idTeam, idActivePlayerIdTeam])
-
-            # Прибавляем команде 1 забитый гол
-            self.teams[idTeam].goals += 1
-
-            # Прибавляем команде 1 пропущенный гол
-            self.teams[(idTeam + 1) % 2].loseGoals += 1
-            self.history.append(f'{self.teams[idTeam].players[idActivePlayerIdTeam].name} бьёт.... ГОООООООЛ!!!!')
-            self.mainHistory.append((f'{self.teams[idTeam].players[idActivePlayerIdTeam].name} ГОЛ', idTeam, self.minute))
-
-            # Прибавляем игроку 1 забитый гол
-            self.teams[idTeam].players[idActivePlayerIdTeam].goals += 1
-
-            # Возвращаем индекс пропустившей команды, и разыгрывающего игрока
-            return [(idTeam + 1) % 2, 6]
-
-        # Если удар не точен
-        else:
-            # Добавляем рандома к процессу сейва
-            t = 1 + random.randint(1, 10)
-
-            # Если вратарь отбил то прибаляем вратарю сейв, иначе игрок ударил мимо
-            if t >= 9:
-                self.shoots_to[idTeam] += 1
-                self.teams[(idTeam + 1) % 2].players[self.teams[(idTeam + 1) % 2].idSostav[0]].saves += 1
-                self.history.append(f'{self.teams[idTeam].players[idActivePlayerIdTeam].name} бьёт... '
-                                    f'{self.teams[(idTeam + 1) % 2].players[self.teams[(idTeam + 1) % 2].idSostav[0]].name} отбивает!')
-            else:
-                self.history.append(f'{self.teams[idTeam].players[idActivePlayerIdTeam].name} бьёт... МИМО!!')
-
-            # Возвращаем команду у которой мяч и номер позиции
-            return [(idTeam + 1) % 2, 1]
 
     def returnResult(self):
         return f'{self.homeGoal}:{self.guestGoal}'
@@ -344,3 +208,5 @@ class Game:
                       "Владение": {"home": int((self.control[0] / 540) * 100), "away": int((self.control[1] / 540) * 100)}},
             "events": [{"minute": x[2], "team": x[1], "description": x[0]} for x in self.mainHistory]
         }
+
+
